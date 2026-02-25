@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { techniques } from "@/data/techniques";
@@ -7,7 +8,20 @@ import GroundingCard from "@/components/GroundingCard";
 
 const Index = () => {
   const navigate = useNavigate();
-  const { t, currentLang, changeLang } = useTranslation();
+  const { t, currentLang, changeLang, translateBatch } = useTranslation();
+
+  // Pre-translate all titles and UI strings
+  useEffect(() => {
+    if (currentLang !== "en") {
+      const allTexts = [
+        "Grounding",
+        "Grounding techniques help bring your attention back to the present moment.",
+        "Choose one activity that feels supportive right now.",
+        ...techniques.map((tech) => tech.title),
+      ];
+      translateBatch(allTexts);
+    }
+  }, [currentLang, translateBatch]);
 
   const langParam = currentLang !== "en" ? `?lang=${currentLang}` : "";
 

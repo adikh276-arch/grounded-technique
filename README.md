@@ -1,16 +1,21 @@
-# Welcome to your Lovable project
+# Welcome to your Grounded Technique
+
+A mindfulness app to guide you through grounding techniques for calm and presence.
+
+## Features
+
+- 20+ Grounding Techniques
+- Multilingual Support (20 Languages)
+- Step-by-step Guidance
+- Mobile-friendly Design
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+**URL**: https://groundedtechnique.dev/projects/REPLACE_WITH_PROJECT_ID
 
 ## How can I edit this code?
 
 There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
 
 Changes made via Lovable will be committed automatically to this repo.
 

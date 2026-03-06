@@ -8,27 +8,10 @@ import LanguageSwitcher from "@/components/LanguageSwitcher";
 export default function TechniqueDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { t, currentLang, changeLang, translateBatch } = useTranslation();
+  const { t, currentLang, changeLang } = useTranslation();
   const [currentStep, setCurrentStep] = useState(0);
 
   const technique = techniques.find((tech) => tech.id === id);
-
-  // Pre-translate ALL steps + UI strings when technique/language changes
-  useEffect(() => {
-    if (technique && currentLang !== "en") {
-      const allTexts = [
-        technique.title,
-        ...technique.steps,
-        "Step",
-        "Back",
-        "Next",
-        "I Feel More Grounded",
-        "Choose Another Technique",
-        "Technique not found",
-      ];
-      translateBatch(allTexts);
-    }
-  }, [technique, currentLang, translateBatch]);
 
   if (!technique) {
     return (

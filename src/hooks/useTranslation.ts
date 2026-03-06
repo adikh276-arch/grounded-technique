@@ -1,113 +1,47 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useEffect, useCallback } from "react";
+import { useTranslation as useI18nTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
-import { languages } from "@/data/languages";
-
-const GOOGLE_TRANSLATE_API_KEY = "AIzaSyDgyWwwmHOROsPZclCm-LGzZs_uoYNhVDk";
-
-// Cache translations to avoid redundant API calls
-const translationCache: Record<string, Record<string, string>> = {};
 
 export function useTranslation() {
+  const { t, i18n } = useI18nTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const langParam = searchParams.get("lang")?.toLowerCase() || "en";
 
-  // Find matching language (case-insensitive)
-  const matchedLang = languages.find(
-    (l) => l.code.toLowerCase() === langParam
-  );
-  const [currentLang, setCurrentLang] = useState(matchedLang?.code || "en");
-  const [translations, setTranslations] = useState<Record<string, string>>({});
-  const [isTranslating, setIsTranslating] = useState(false);
-  const pendingTexts = useRef<Set<string>>(new Set());
-
-  // Sync URL param changes
-  useEffect(() => {
-    const param = searchParams.get("lang")?.toLowerCase() || "en";
-    const match = languages.find((l) => l.code.toLowerCase() === param);
-    if (match && match.code !== currentLang) {
-      setCurrentLang(match.code);
-    }
-  }, [searchParams]);
+  const currentLang = i18n.language || "en";
 
   const changeLang = useCallback(
     (code: string) => {
-      setCurrentLang(code);
+      i18n.changeLanguage(code);
+      localStorage.setItem("language", code);
       setSearchParams({ lang: code }, { replace: true });
     },
-    [setSearchParams]
+    [i18n, setSearchParams]
   );
 
-  const translateBatch = useCallback(
-    async (texts: string[]) => {
-      if (currentLang === "en" || texts.length === 0) return;
-
-      const cacheKey = currentLang;
-      if (!translationCache[cacheKey]) translationCache[cacheKey] = {};
-
-      const uncached = texts.filter((t) => !translationCache[cacheKey][t]);
-      if (uncached.length === 0) {
-        setTranslations((prev) => ({ ...prev, ...translationCache[cacheKey] }));
-        return;
-      }
-
-      setIsTranslating(true);
-      try {
-        const url = `https://translation.googleapis.com/language/translate/v2?key=${GOOGLE_TRANSLATE_API_KEY}`;
-        const res = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            q: uncached,
-            target: currentLang,
-            source: "en",
-            format: "text",
-          }),
-        });
-        const data = await res.json();
-        if (data.data?.translations) {
-          const newTranslations: Record<string, string> = {};
-          data.data.translations.forEach(
-            (t: { translatedText: string }, i: number) => {
-              newTranslations[uncached[i]] = t.translatedText;
-              translationCache[cacheKey][uncached[i]] = t.translatedText;
-            }
-          );
-          setTranslations((prev) => ({
-            ...prev,
-            ...translationCache[cacheKey],
-          }));
-        }
-      } catch (err) {
-        console.error("Translation error:", err);
-      } finally {
-        setIsTranslating(false);
-      }
-    },
-    [currentLang]
-  );
-
-  const t = useCallback(
-    (text: string): string => {
-      if (currentLang === "en") return text;
-      if (translations[text]) return translations[text];
-      // Queue for batch translation
-      pendingTexts.current.add(text);
-      return text; // Return original while loading
-    },
-    [currentLang, translations]
-  );
-
-  // Flush pending translations
+  // Initialize from URL, then localStorage, then default
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (pendingTexts.current.size > 0) {
-        const texts = Array.from(pendingTexts.current);
-        pendingTexts.current.clear();
-        translateBatch(texts);
-      }
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [currentLang, translateBatch]);
+    const langParam = searchParams.get("lang");
+    const localLang = localStorage.getItem("language");
+    const targetLang = langParam || localLang || "en";
 
-  return { t, currentLang, changeLang, isTranslating, translateBatch };
+    if (i18n.language !== targetLang) {
+      i18n.changeLanguage(targetLang);
+    }
+  }, []);
+
+  // Sync with URL param if it changes externally
+  useEffect(() => {
+    const langParam = searchParams.get("lang");
+    if (langParam && langParam !== i18n.language) {
+      i18n.changeLanguage(langParam);
+    }
+  }, [searchParams, i18n]);
+
+  return {
+    t,
+    currentLang,
+    changeLang,
+    i18n,
+    // Add dummy translateBatch to avoid breaking existing code
+    translateBatch: () => { },
+  };
 }

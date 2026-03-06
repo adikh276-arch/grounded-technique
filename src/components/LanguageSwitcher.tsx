@@ -59,11 +59,10 @@ export default function LanguageSwitcher({ currentLang, onChangeLang }: Language
                   setOpen(false);
                   setSearch("");
                 }}
-                className={`w-full text-left px-3 py-2 text-sm hover:bg-secondary transition-colors flex items-center justify-between ${
-                  lang.code === currentLang ? "bg-accent text-accent-foreground font-medium" : "text-foreground"
-                }`}
+                className={`w-full text-left px-3 py-2 text-sm hover:bg-secondary transition-colors flex items-center justify-between ${lang.code === currentLang ? "bg-accent text-accent-foreground font-medium" : "text-foreground"
+                  }`}
               >
-                <span>{lang.name}</span>
+                <span>{lang.nativeName || lang.name}</span>
                 <span className="text-xs text-muted-foreground uppercase">{lang.code}</span>
               </button>
             ))}

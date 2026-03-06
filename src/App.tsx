@@ -14,7 +14,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <BrowserRouter basename="/grounded_technique">
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/technique/:id" element={<TechniqueDetail />} />
